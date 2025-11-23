@@ -19,8 +19,9 @@ python3 -m http.server 8000
 ```
 
 Gameplay
-- Choose a difficulty and press "New Puzzle" (or start typing and press Enter).
-- Enter the missing number and press Submit.
+- Choose a `Mode` (Sequences or Riddles) and a difficulty, then press "New Puzzle".
+- Sequences: Enter the missing number and press Submit.
+- Riddles: Choose the correct option from the multiple-choice buttons.
 - Score increases for each correct answer.
 
 Notes and next improvements

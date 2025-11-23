@@ -39,4 +39,11 @@ button{cursor:pointer;background:var(--accent);border:none;color:#012241}
 .feedback.error{color:var(--danger)}
 .footer{margin-top:14px;text-align:center;color:var(--muted)}
 
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice-btn{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.01);color:inherit;text-align:left;cursor:pointer}
+.choice-btn:hover{background:rgba(255,255,255,0.02)}
+.choice-btn.correct{border-color:var(--success);background:rgba(16,185,129,0.08)}
+.choice-btn.wrong{border-color:var(--danger);background:rgba(239,68,68,0.06)}
+.hidden{display:none}
+
 @media (max-width:420px){.controls{flex-wrap:wrap}.container{padding:16px}}

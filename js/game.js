@@ -2,8 +2,11 @@
   const seqEl = document.getElementById('sequence');
   const ansInput = document.getElementById('answerInput');
   const submitBtn = document.getElementById('submitAnswer');
+  const choicesEl = document.getElementById('choices');
+  const answerRow = document.getElementById('answerRow');
   const newBtn = document.getElementById('newPuzzle');
   const diffSel = document.getElementById('difficulty');
+  const modeSel = document.getElementById('modeSelect');
   const feedback = document.getElementById('feedback');
   const scoreEl = document.getElementById('score');
 
@@ -55,6 +58,15 @@
     primes: generatePrimes,
   };
 
+  // Simple riddles database (can expand)
+  const riddles = [
+    { q: 'I speak without a mouth and hear without ears. I have nobody, but I come alive with wind. What am I?', options:['Echo','Fire','Shadow','Water'], a:0 },
+    { q: 'What has keys but can’t open locks?', options:['Piano','Map','Clock','Bottle'], a:0 },
+    { q: 'What gets wetter as it dries?', options:['Sponge','Towel','Rain','Soap'], a:1 },
+    { q: 'What can travel around the world while staying in a corner?', options:['Stamp','Bird','Plane','Shadow'], a:0 },
+    { q: 'What has a heart that doesn’t beat?', options:['Artichoke','Clock','Rock','Tree'], a:0 }
+  ];
+
   function pickTypeByDifficulty(difficulty){
     const easy = ['arithmetic','fibonacci','squares'];
     const medium = ['arithmetic','geometric','fibonacci','squares'];
@@ -64,23 +76,75 @@
   }
 
   function generatePuzzle(difficulty){
+    // For sequence mode produce a sequence puzzle
     const type = pickTypeByDifficulty(difficulty);
     const len = difficulty==='easy'? 5 : difficulty==='hard'? 7 : 6;
     const seq = generators[type](len, difficulty);
-    // hide one element (not the first to keep solvable clues)
     const hideIndex = randInt(1, seq.length-2);
     const answer = seq[hideIndex];
     const display = seq.map((v,i)=> i===hideIndex? '...' : v);
-    return {type, seq, hideIndex, display, answer};
+    return {mode:'sequences', type, seq, hideIndex, display, answer};
+  }
+
+  function generateRiddle(){
+    const r = riddles[randInt(0, riddles.length-1)];
+    // shuffle options for variety while tracking correct index
+    const opts = r.options.slice();
+    for (let i = opts.length -1; i>0; i--){
+      const j = randInt(0,i);
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    const answerIndex = opts.indexOf(r.options[r.a]);
+    return {mode:'riddles', question: r.q, options: opts, answerIndex };
   }
 
   function renderPuzzle(p){
-    seqEl.textContent = p.display.join('  ·  ');
     feedback.textContent = '';
     feedback.className = 'feedback';
-    ansInput.value = '';
-    ansInput.focus();
+    choicesEl.innerHTML = '';
+    // render according to mode
+    if(p.mode === 'riddles'){
+      seqEl.textContent = p.question;
+      answerRow.classList.add('hidden');
+      choicesEl.classList.remove('hidden');
+      choicesEl.setAttribute('aria-hidden','false');
+      p.options.forEach((opt, idx)=>{
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', ()=> handleChoice(idx, p));
+        choicesEl.appendChild(btn);
+      });
+    } else {
+      seqEl.textContent = p.display.join('  ·  ');
+      answerRow.classList.remove('hidden');
+      choicesEl.classList.add('hidden');
+      choicesEl.setAttribute('aria-hidden','true');
+      ansInput.value = '';
+      ansInput.focus();
+    }
     current = p;
+  }
+
+  function handleChoice(selectedIndex, p){
+    if(!p || p.mode !== 'riddles') return;
+    const buttons = Array.from(choicesEl.querySelectorAll('.choice-btn'));
+    buttons.forEach((b,i)=> b.disabled = true);
+    const correct = selectedIndex === p.answerIndex;
+    if(correct){
+      score += 1;
+      feedback.textContent = 'Correct!';
+      feedback.className = 'feedback success';
+      buttons[p.answerIndex].classList.add('correct');
+      scoreEl.textContent = `Score: ${score}`;
+      setTimeout(()=> startPuzzle(), 900);
+    } else {
+      feedback.textContent = `Incorrect — correct answer was "${p.options[p.answerIndex]}"`;
+      feedback.className = 'feedback error';
+      buttons[selectedIndex].classList.add('wrong');
+      buttons[p.answerIndex].classList.add('correct');
+    }
   }
 
   function checkAnswer(){
@@ -103,13 +167,20 @@
 
   function startPuzzle(){
     const difficulty = diffSel.value;
-    const p = generatePuzzle(difficulty);
+    const mode = modeSel.value || 'sequences';
+    let p;
+    if(mode === 'riddles'){
+      p = generateRiddle();
+    } else {
+      p = generatePuzzle(difficulty);
+    }
     renderPuzzle(p);
   }
 
   // events
   submitBtn.addEventListener('click', checkAnswer);
   newBtn.addEventListener('click', startPuzzle);
+  modeSel.addEventListener('change', startPuzzle);
   ansInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') checkAnswer(); });
 
   // init
