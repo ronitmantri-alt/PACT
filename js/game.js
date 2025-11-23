@@ -165,9 +165,19 @@
     }
   }
 
-  function startPuzzle(){
+  function updateControlsVisibility(mode){
+    // hide difficulty when riddles mode is active
+    if(mode === 'riddles'){
+      diffSel.classList.add('hidden');
+    } else {
+      diffSel.classList.remove('hidden');
+    }
+  }
+
+  function startPuzzle(modeArg){
     const difficulty = diffSel.value;
-    const mode = modeSel.value || 'sequences';
+    const mode = modeArg || (modeSel && modeSel.value) || 'sequences';
+    updateControlsVisibility(mode);
     let p;
     if(mode === 'riddles'){
       p = generateRiddle();
@@ -179,12 +189,12 @@
 
   // events
   submitBtn.addEventListener('click', checkAnswer);
-  newBtn.addEventListener('click', startPuzzle);
-  modeSel.addEventListener('change', startPuzzle);
+  newBtn.addEventListener('click', ()=> startPuzzle(modeSel && modeSel.value));
+  modeSel.addEventListener('change', ()=> startPuzzle(modeSel && modeSel.value));
   ansInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') checkAnswer(); });
 
   // init
-  startPuzzle();
+  startPuzzle(modeSel && modeSel.value);
 
   // expose for debugging
   window._seqGame = { startPuzzle };
