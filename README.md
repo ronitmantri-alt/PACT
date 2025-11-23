@@ -24,6 +24,25 @@ Gameplay
 - Riddles: Choose the correct option from the multiple-choice buttons.
 - Score increases for each correct answer.
 
+Bank generation (fast & robust)
+- This project supports runtime generation of very large question banks without shipping thousands of static files.
+- From the browser console you can pre-generate banks and (optionally) persist them to `localStorage`.
+
+Example (generate 1000 riddles at `medium` difficulty and persist):
+```js
+// in the page console
+window._seqGame.buildBank({ mode: 'riddles', difficulty: 'medium', count: 1000, persist: true });
+```
+
+Example (generate 1000 sequences spread across sequence categories at `easy` difficulty):
+```js
+window._seqGame.buildBank({ mode: 'sequences', difficulty: 'easy', count: 1000, persist: true });
+```
+
+Notes
+- The bank builder avoids repeats during generation and mixes curated riddles with synthetic variants to reach large counts quickly.
+- If you prefer static JSON files instead, I can add a generator script to write `data/*.json` files.
+
 Notes and next improvements
 - Add timer and streaks
 - Add persistence (localStorage) for high scores
